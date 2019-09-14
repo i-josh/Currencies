@@ -33,7 +33,6 @@ public class SplashActivity extends Activity {
 
     public static final String URL_CODES = "http://openexchangerates.org/api/currencies.json";
     public static final String KEY_ARRAYLIST = "key_arraylist";
-    private ArrayList<String> currencies;
 
 
     @Override
@@ -45,7 +44,7 @@ public class SplashActivity extends Activity {
 
     }
 
-    private class FetchCodesTask extends AsyncTask<String,Void,JSONObject> {
+    private  class FetchCodesTask extends AsyncTask<String,Void,JSONObject> {
         private ProgressBar progressBar;
 
         @Override
@@ -70,14 +69,14 @@ public class SplashActivity extends Activity {
                 }
                 Iterator iterator = jsonObject.keys();
                 String key;
-                currencies = new ArrayList<>();
+                ArrayList<String> currencies = new ArrayList<>();
                 while (iterator.hasNext()){
                     key = (String) iterator.next();
                     currencies.add(key + " | " + jsonObject.getString(key));
                 }
                 final Intent intent = new Intent(SplashActivity.this,MainActivity.class);
                 intent.putExtra(KEY_ARRAYLIST, currencies);
-                if (isConnectedToInternet()){
+                if (isOnline()){
                     startActivity(intent);
                     finish();
                 }else {
@@ -86,7 +85,7 @@ public class SplashActivity extends Activity {
                         @Override
                         public void onClick(View v) {
                             progressBar.setVisibility(View.VISIBLE);
-                            if (isConnectedToInternet()){
+                            if (isOnline()){
                                 startActivity(intent);
                                 finish();
                             }
@@ -99,16 +98,9 @@ public class SplashActivity extends Activity {
         }
     }
 
-    private boolean isConnectedToInternet(){
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-            int exitValue = ipProcess.waitFor();
-            return (exitValue == 0);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } return false;
+    private boolean isOnline(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo.isConnected();
     }
 }
